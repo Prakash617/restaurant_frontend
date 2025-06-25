@@ -17,32 +17,44 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const res = await fetch('http://localhost:8000/api/token/', {
+      // Login - get JWT token cookie
+      const res = await fetch('http://meguro.com.np/api/auth/login/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // ⚠️ Important for cookies
+        credentials: 'include',
         body: JSON.stringify({ username, password }),
       })
 
+      console.log('Login response status:', res.status)
+      console.log('Set-Cookie header:', res.headers.get('set-cookie'))
+
       if (!res.ok) throw new Error('Invalid credentials')
 
-      // Optional: fetch user
-      const userRes = await fetch('http://localhost:8000/api/auth/user/', {
+      // Fetch user info after login
+      const userRes = await fetch('http://meguro.com.np/api/auth/user/', {
         credentials: 'include',
       })
+
+      console.log('User response status:', userRes.status)
+
+      if (!userRes.ok) throw new Error('Failed to fetch user info')
 
       const userData = await userRes.json()
       setUser(userData)
 
       router.push('/dashboard')
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.message || 'Login failed')
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow w-full max-w-sm">
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-6 rounded shadow w-full max-w-sm"
+      >
         <h2 className="text-xl font-semibold mb-4">Login</h2>
 
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
